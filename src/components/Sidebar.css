@@ -1,0 +1,59 @@
+.sidebar {
+  width: 250px;
+  background-color: #f8f9fa;
+  padding: 10px;
+  height: 100vh;
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+  transition: width 0.3s ease;
+  overflow-y: auto; /* Enables scrolling */
+}
+
+.menu-item {
+  padding: 10px;
+  cursor: pointer;
+  border-radius: 5px;
+  position: relative;
+
+}
+
+.menu-item:hover {
+  background-color: #dd3d4e;
+}
+
+.menu-main {
+  display: flex;
+  align-items: center;
+  font-size: 18px;
+  gap: 10px;
+  
+}
+
+.submenu {
+  display: none;
+  background: white;
+  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
+  padding: 10px;
+  margin-top: 5px; /* Move dropdown below */
+  border-radius: 5px;
+  align-items: center ;
+}
+
+.submenu-item {
+  padding: 5px 10px;
+
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.submenu-item:hover {
+  background-color: #dd3d4e;
+}
+
+.show {
+  display: block; /* Show dropdown */
+}
+.icon-text{
+  
+}
