@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Link, Route, Routes } from "react-router-dom";
 import {
   FaHome,
   FaUser,
@@ -21,7 +22,7 @@ import "./Sidebar.css";
 import TestTable from "./TestTable"; // Import the TestTable component
 
 const Sidebar = () => {
-  const [openDropdown, setOpenDropdown] = useState(false);
+  const [openDropdown, setOpenDropdown] = useState(null); // Track which dropdown is open
   const [activeItem, setActiveItem] = useState(""); // Track active menu item
 
   const menuItems = [
@@ -41,7 +42,7 @@ const Sidebar = () => {
         { name: "Unit/Plant", icon: <FaIndustry /> },
         { name: "Vendor Master", icon: <FaUsers /> },
         { name: "User", icon: <FaUser /> },
-        { name: "Lab Test", icon: <FaFlask /> }, // Lab Test added here
+        { name: "Lab Test", icon: <FaFlask />, route: "/labtest" },
         { name: "Assessment", icon: <FaClipboardCheck /> },
       ],
     },
@@ -59,35 +60,38 @@ const Sidebar = () => {
           <div
             className="menu-main"
             onClick={() => {
-              if (item.name === "Master Data") {
-                setOpenDropdown(!openDropdown);
-              }
-              // Update active item on click
-              if (item.name === "Lab Test") {
-                setActiveItem("Lab Test");
+              if (item.hasDropdown) {
+                setOpenDropdown(openDropdown === item.name ? null : item.name);
+              } else {
+                setActiveItem(item.name);
+                setOpenDropdown(null);
               }
             }}
           >
             {item.icon}
             <span className="icon-text">{item.name}</span>
-            {item.name === "Master Data" &&
-              (openDropdown ? <FaChevronUp /> : <FaChevronDown />)}
+            {item.hasDropdown &&
+              (openDropdown === item.name ? <FaChevronUp /> : <FaChevronDown />)}
           </div>
 
-          {/* Show submenu below */}
-          {openDropdown && item.name === "Master Data" && (
-            <div className={`submenu ${openDropdown ? "show" : ""}`}>
+          {openDropdown === item.name && (
+            <div className="submenu">
               {item.subcategories.map((sub, subIndex) => (
                 <div
                   key={subIndex}
-                  className="submenu-item"
-                  onClick={() => {
-                    if (sub.name === "Lab Test") {
-                      setActiveItem("Lab Test");
-                    }
-                  }}
+                  className={`submenu-item ${
+                    activeItem === sub.name ? "active" : ""
+                  }`}
                 >
-                  {sub.icon} <span>{sub.name}</span>
+                  {sub.route ? (
+                    <Link to={sub.route} onClick={() => setActiveItem(sub.name)}>
+                      {sub.icon} <span>{sub.name}</span>
+                    </Link>
+                  ) : (
+                    <>
+                      {sub.icon} <span>{sub.name}</span>
+                    </>
+                  )}
                 </div>
               ))}
             </div>
@@ -95,13 +99,10 @@ const Sidebar = () => {
         </div>
       ))}
 
-      {/* Conditionally render TestTable based on active item */}
-      {activeItem === "Lab Test" && <TestTable />}
+     
     </div>
   );
 };
 
 export default Sidebar;
-
-
 

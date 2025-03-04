@@ -15,7 +15,7 @@ const Login = () => {
     
     if (result.success) {
       console.log(" Login successful!");
-      navigate("/NavbarHero"); 
+      navigate("/"); 
     }
     else(
       console.log(" Invalid email  & password")

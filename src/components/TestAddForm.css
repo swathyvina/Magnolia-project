@@ -132,8 +132,7 @@ select:focus {
   flex-direction: column;
   color: grey;
   gap: 20px;
-  min-width: 900px;
-  font-size: 12px;
+ font-size: 12px;
 }
 
 .first,
@@ -141,6 +140,12 @@ select:focus {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 15px;
+  min-width:400px;
+}
+
+.form-control{
+  width:100%;
+  min-width:200px;
 }
 
 /* Textarea container for Test Description */

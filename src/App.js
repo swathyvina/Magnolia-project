@@ -1,32 +1,30 @@
-import React, { useState } from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import React from "react";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import Login from "./components/Login";
-import NavbarHero from "./components/NavbarHero";
+import TestTable from "./components/TestTable";
 import TestForm from "./components/TestAddForm";
-
-
+import Layout from "./components/Layout"; // Import the new Layout component
 
 function App() {
-  const [showForm, setShowForm] = useState(true);
   return (
-    <>
     <Router>
       <Routes>
-        {/* Default route to Login */}
+        {/* Login page without layout */}
         <Route path="/login" element={<Login />} />
-        
-        {/* Route for NavbarHero after login */}
-        <Route path="/NavbarHero" element={<NavbarHero/>} />
 
+        {/* Dashboard Layout */}
+        <Route path="/" element={<Layout />}>
+          <Route index element={<Navigate to="/labtest" replace />} />  {/* Default route after login */}
+          <Route path="labtest" element={<TestTable />} />
+          <Route path="addtest" element={<TestForm />} />
+          <Route path="TestTable" element={<TestTable />} />
+          <Route path="addtest/:testId" element={<TestForm />} />
+        </Route>
+
+        {/* If no route matches, redirect to login */}
+        <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
     </Router>
-    <div>
-      {/* {showForm && <TestForm toggleForm={setShowForm} />} */}
-    </div>
-    
-   
-    </>
-    
   );
 }
 
