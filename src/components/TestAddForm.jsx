@@ -1,4 +1,4 @@
-import React, { useState,useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import "./TestAddForm.css";
 import {
   Container,
@@ -11,29 +11,28 @@ import {
   Button,
   Grid,
   Card,
+  Fab,
   CardContent,
   Box,
 } from "@mui/material";
-import { postLabTest } from "../hooks/apipost"
+import { postLabTest } from "../hooks/apipost";
 import { updateTest } from "../hooks/updatetest";
 import { useParams } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
+import AddIcon from "@mui/icons-material/Add";
+import RemoveIcon from "@mui/icons-material/Remove";
 
-
-
-const TestForm = ({ toggleForm ,refreshTable}) => {
-
-
+const TestForm = ({ toggleForm, refreshTable }) => {
   const [selectedValues, setSelectedValues] = useState({
     lab_test_id: "",
     test_name: "",
     method: "",
     short_name: "",
     uom: "",
-    test_category: "", 
+    test_category: "",
     result_output_type: "",
-    starting_value:"",
-    ending_value:"",
+    starting_value: "",
+    ending_value: "",
     AgeBasedStandard: "",
     GenderBasedStandard: "",
     PregnancyFactorApplicable: "",
@@ -53,11 +52,10 @@ const TestForm = ({ toggleForm ,refreshTable}) => {
   });
 
   const { testId } = useParams();
-  const navigate = useNavigate(); 
-  
+  const navigate = useNavigate();
+  const [show, setShow] = useState(false);
 
   const token = localStorage.getItem("authToken");
-
 
   useEffect(() => {
     console.log("Fetching test data for:", testId);
@@ -96,23 +94,49 @@ const TestForm = ({ toggleForm ,refreshTable}) => {
             short_name: fetchedData.short_name || prevState.short_name,
             uom: fetchedData.uom || prevState.uom,
             test_category: fetchedData.test_category || prevState.test_category,
-            result_output_type: fetchedData.result_output_type || prevState.result_output_type,
-            starting_value: fetchedData.starting_value || prevState.starting_value,
+            result_output_type:
+              fetchedData.result_output_type || prevState.result_output_type,
+            starting_value:
+              fetchedData.starting_value || prevState.starting_value,
             ending_value: fetchedData.ending_value || prevState.ending_value,
-            AgeBasedStandard: fetchedData.is_age_based_standard === true ? "Yes" : fetchedData.is_age_based_standard === false ? "No" : "",
-            GenderBasedStandard: fetchedData.is_gender_based_standard === true ? "Yes" : fetchedData.is_gender_based_standard === false ? "No" : "",
-            PregnancyFactorApplicable: fetchedData.is_pregnancy_factor_applicable === true ? "Yes" : fetchedData.is_pregnancy_factor_applicable === false ? "No" : "",
-            IsEmpupdatethisresult: fetchedData.employee_test_applicable ? "Yes" : "No",
-            IsImageUploadapplicable: fetchedData.is_image_upload_applicable ? "Yes" : "No",
-            IsdoctorCommentsApplicable: fetchedData.is_doctor_comments_applicable ? "Yes" : "No",
-            IsreportImpressionisRequired: fetchedData.is_report_impression_required ? "Yes" : "No",
+            AgeBasedStandard:
+              fetchedData.is_age_based_standard === true
+                ? "Yes"
+                : fetchedData.is_age_based_standard === false
+                ? "No"
+                : "",
+            GenderBasedStandard:
+              fetchedData.is_gender_based_standard === true
+                ? "Yes"
+                : fetchedData.is_gender_based_standard === false
+                ? "No"
+                : "",
+            PregnancyFactorApplicable:
+              fetchedData.is_pregnancy_factor_applicable === true
+                ? "Yes"
+                : fetchedData.is_pregnancy_factor_applicable === false
+                ? "No"
+                : "",
+            IsEmpupdatethisresult: fetchedData.employee_test_applicable
+              ? "Yes"
+              : "No",
+            IsImageUploadapplicable: fetchedData.is_image_upload_applicable
+              ? "Yes"
+              : "No",
+            IsdoctorCommentsApplicable:
+              fetchedData.is_doctor_comments_applicable ? "Yes" : "No",
+            IsreportImpressionisRequired:
+              fetchedData.is_report_impression_required ? "Yes" : "No",
             IsvalueRequired: fetchedData.is_value_applicable ? "Yes" : "No",
-            guideline_name: firstGuideline.name || prevState.guideline_name, 
+            guideline_name: firstGuideline.name || prevState.guideline_name,
             age_from: firstGuideline.age_from || prevState.age_from,
             age_to: firstGuideline.age_to || prevState.age_to,
             gender: firstGuideline.gender || prevState.gender,
-            guideline_starting_value: firstGuideline.starting_value || prevState.guideline_starting_value,
-            guideline_ending_value: firstGuideline.ending_value || prevState.guideline_ending_value,
+            guideline_starting_value:
+              firstGuideline.starting_value ||
+              prevState.guideline_starting_value,
+            guideline_ending_value:
+              firstGuideline.ending_value || prevState.guideline_ending_value,
 
             test_result_guidelines: fetchedData.test_result_guidelines || [],
           }));
@@ -123,13 +147,10 @@ const TestForm = ({ toggleForm ,refreshTable}) => {
       .catch((error) => console.error("Error fetching test:", error));
   }, [testId, token]);
 
-
   const [selectedGender, setSelectedGender] = useState("");
-  const [isSubmitted, setIsSubmitted] = useState(false); 
+  const [isSubmitted, setIsSubmitted] = useState(false);
 
-
-  
- const [showGuidelinesForm, setShowGuidelinesForm] = useState(false);
+  const [showGuidelinesForm, setShowGuidelinesForm] = useState(false);
   const handleInputChange = (event) => {
     const { name, value } = event.target;
     setSelectedValues((prevState) => ({
@@ -138,7 +159,6 @@ const TestForm = ({ toggleForm ,refreshTable}) => {
     }));
   };
 
-
   const handleDropdownChange = (event, key) => {
     console.log(`Updating ${key} to:`, event.target.value);
     setSelectedValues((prevState) => ({
@@ -146,7 +166,7 @@ const TestForm = ({ toggleForm ,refreshTable}) => {
       [key]: event.target.value,
     }));
   };
-  
+
   const handleTextareaChange = (event) => {
     setSelectedValues((prevState) => ({
       ...prevState,
@@ -154,18 +174,15 @@ const TestForm = ({ toggleForm ,refreshTable}) => {
     }));
   };
 
-
- 
-
   const handleSubmit = async () => {
     setIsSubmitted(true); // Mark form as submitted
 
-    if (!selectedValues.lab_test_id.trim() || !selectedValues.test_name.trim()) {
+    if (
+      !selectedValues.lab_test_id.trim() ||
+      !selectedValues.test_name.trim()
+    ) {
       return; // Stop submission if required fields are empty
     }
-    
-      
-  
 
     const requestData = {
       test_id: selectedValues.lab_test_id,
@@ -178,18 +195,27 @@ const TestForm = ({ toggleForm ,refreshTable}) => {
 
       starting_value: Number(selectedValues.starting_value) || 0,
       ending_value: Number(selectedValues.ending_value) || 0,
-      ...(selectedValues.AgeBasedStandard && { is_age_based_standard: selectedValues.AgeBasedStandard === "Yes" }),
-      ...(selectedValues.GenderBasedStandard && { is_gender_based_standard: selectedValues.GenderBasedStandard === "Yes" }),
-      ...(selectedValues.PregnancyFactorApplicable && { is_pregnancy_factor_applicable: selectedValues.PregnancyFactorApplicable === "Yes" }),
-      
+      ...(selectedValues.AgeBasedStandard && {
+        is_age_based_standard: selectedValues.AgeBasedStandard === "Yes",
+      }),
+      ...(selectedValues.GenderBasedStandard && {
+        is_gender_based_standard: selectedValues.GenderBasedStandard === "Yes",
+      }),
+      ...(selectedValues.PregnancyFactorApplicable && {
+        is_pregnancy_factor_applicable:
+          selectedValues.PregnancyFactorApplicable === "Yes",
+      }),
+
       employee_test_applicable: selectedValues.IsEmpupdatethisresult === "Yes",
-      is_image_upload_applicable: selectedValues.IsImageUploadapplicable === "Yes",
-      is_doctor_comments_applicable: selectedValues.IsdoctorCommentsApplicable === "Yes",
-      is_report_impression_required: selectedValues.IsreportImpressionisRequired === "Yes",
+      is_image_upload_applicable:
+        selectedValues.IsImageUploadapplicable === "Yes",
+      is_doctor_comments_applicable:
+        selectedValues.IsdoctorCommentsApplicable === "Yes",
+      is_report_impression_required:
+        selectedValues.IsreportImpressionisRequired === "Yes",
       is_value_applicable: selectedValues.IsvalueRequired === "Yes",
       description: selectedValues.additionalComments,
 
- 
       test_result_guidelines: [
         ...(selectedValues.test_result_guidelines || []),
         selectedValues.guideline_name
@@ -202,13 +228,13 @@ const TestForm = ({ toggleForm ,refreshTable}) => {
               ending_value: selectedValues.guideline_ending_value || "",
             }
           : null,
-      ].filter(Boolean), 
+      ].filter(Boolean),
     };
 
     try {
       let response;
       if (testId) {
-        response = await updateTest(testId, requestData); 
+        response = await updateTest(testId, requestData);
         alert("Lab test updated successfully!");
       } else {
         response = await postLabTest(requestData);
@@ -222,7 +248,7 @@ const TestForm = ({ toggleForm ,refreshTable}) => {
       alert("Error processing request. Check console for details.");
     }
   };
-  
+
   const shouldShowGuidelines =
     selectedValues.AgeBasedStandard !== "" &&
     selectedValues.GenderBasedStandard !== "" &&
@@ -233,41 +259,52 @@ const TestForm = ({ toggleForm ,refreshTable}) => {
       <Card className="card">
         <CardContent>
           <Typography variant="h4" gutterBottom>
-            Test- {testId ? "Update" : "Add"} 
+            Test- {testId ? "Update" : "Add"}
           </Typography>
 
           <Grid container spacing={2}>
             <Grid item xs={4}>
-              <TextField 
-                fullWidth 
-                label="Lab Test ID" 
-                name="lab_test_id" 
-                required 
+              <TextField
+                fullWidth
+                label="Lab Test ID"
+                name="lab_test_id"
+                required
+                variant="filled"
                 value={selectedValues.lab_test_id}
                 onChange={handleInputChange}
                 error={isSubmitted && !selectedValues.lab_test_id.trim()} // Show error only after submission
-                helperText={isSubmitted && !selectedValues.lab_test_id.trim() ? "This field is required" : ""}
+                helperText={
+                  isSubmitted && !selectedValues.lab_test_id.trim()
+                    ? "This field is required"
+                    : ""
+                }
               />
             </Grid>
             <Grid item xs={4}>
-              <TextField 
-                fullWidth 
-                label="Name" 
+              <TextField
+                fullWidth
+                label="Name"
                 name="test_name"
-                required 
+                required
                 value={selectedValues.test_name}
                 onChange={handleInputChange}
+                variant="filled"
                 error={isSubmitted && !selectedValues.lab_test_id.trim()} // Show error only after submission
-                helperText={isSubmitted && !selectedValues.lab_test_id.trim() ? "This field is required" : ""}
+                helperText={
+                  isSubmitted && !selectedValues.lab_test_id.trim()
+                    ? "This field is required"
+                    : ""
+                }
               />
             </Grid>
             <Grid item xs={4}>
-              <TextField 
-                fullWidth 
-                label="Method" 
+              <TextField
+                fullWidth
+                label="Method"
                 name="method"
                 value={selectedValues.method}
                 onChange={handleInputChange}
+                variant="filled"
               />
             </Grid>
           </Grid>
@@ -275,21 +312,23 @@ const TestForm = ({ toggleForm ,refreshTable}) => {
           {/* Second Row */}
           <Grid container spacing={2} marginTop={2}>
             <Grid item xs={6}>
-              <TextField 
-                fullWidth 
-                label="Short Name" 
+              <TextField
+                fullWidth
+                label="Short Name"
                 name="short_name"
+                variant="filled"
                 value={selectedValues.short_name}
                 onChange={handleInputChange}
               />
             </Grid>
             <Grid item xs={6}>
-              <TextField 
-                fullWidth 
-                label="Unit of Measurement" 
+              <TextField
+                fullWidth
+                label="Unit of Measurement"
                 name="uom"
                 value={selectedValues.uom}
                 onChange={handleInputChange}
+                variant="filled"
               />
             </Grid>
           </Grid>
@@ -298,27 +337,36 @@ const TestForm = ({ toggleForm ,refreshTable}) => {
           <Grid container spacing={2} marginTop={2}>
             <Grid item xs={6}>
               <FormControl fullWidth>
-                <InputLabel>Test Category</InputLabel>
-                <Select
+                <TextField
+                  id="test-category-select"
+                  select
+                  label="Test Category"
                   name="test_category"
                   value={selectedValues.test_category}
-                  onChange={(event) => handleDropdownChange(event, "test_category")}
+                  onChange={(event) =>
+                    handleDropdownChange(event, "test_category")
+                  }
+                  variant="filled"
                 >
                   <MenuItem value="haematology">Haematology</MenuItem>
                   <MenuItem value="microbiology">Microbiology</MenuItem>
                   <MenuItem value="pathology">Pathology</MenuItem>
                   <MenuItem value="radiology">Radiology</MenuItem>
                   <MenuItem value="vitals">Vitals</MenuItem>
-                </Select>
+                </TextField>
               </FormControl>
             </Grid>
             <Grid item xs={6}>
-              <FormControl fullWidth>
+              <FormControl fullWidth variant="filled">
+                {" "}
+                {/* Apply variant here */}
                 <InputLabel>Result Output Type</InputLabel>
                 <Select
                   name="result_output_type"
                   value={selectedValues.result_output_type}
-                  onChange={(event) => handleDropdownChange(event, "result_output_type")}
+                  onChange={(event) =>
+                    handleDropdownChange(event, "result_output_type")
+                  }
                 >
                   <MenuItem value="number">Number</MenuItem>
                   <MenuItem value="string">String</MenuItem>
@@ -326,87 +374,114 @@ const TestForm = ({ toggleForm ,refreshTable}) => {
               </FormControl>
             </Grid>
           </Grid>
-         {/* Second Row */}
-         <Grid container spacing={2} marginTop={2}>
+          {/* Second Row */}
+          <Grid container spacing={2} marginTop={2}>
             <Grid item xs={6}>
-              <TextField 
-                fullWidth 
-                label="Standard Ref.Start Value" 
+              <TextField
+                fullWidth
+                label="Standard Ref.Start Value"
                 name="starting_value"
                 value={selectedValues.starting_value}
                 onChange={handleInputChange}
+                variant="filled"
               />
             </Grid>
             <Grid item xs={6}>
-              <TextField 
-                fullWidth 
-                label="Standard Ref.End Value" 
+              <TextField
+                fullWidth
+                label="Standard Ref.End Value"
                 name="ending_value"
                 value={selectedValues.ending_value}
                 onChange={handleInputChange}
+                variant="filled"
               />
             </Grid>
           </Grid>
-
 
           {/* Configuration and Guidelines */}
           {/* Configuration and Guidelines */}
           <Box marginTop={3}>
             <Grid container spacing={2}>
               {/* Configuration Section */}
-              {!showGuidelinesForm ? (
+              {!showGuidelinesForm && (
                 <Grid item xs={shouldShowGuidelines ? 6 : 12}>
                   <Typography variant="h6" className="config">
                     Configuration
                   </Typography>
-                 
-                </Grid>
-              ) : null}
-
-              {/* Test Result Reference Guideline (Initially Half Width) */}
-              {shouldShowGuidelines && !showGuidelinesForm && (
-                <Grid item xs={6}>
-                  <Typography
-                    variant="h6"
-                    className="result-guidelines"
-                    sx={{ cursor: "pointer" }}
-                    onClick={() => setShowGuidelinesForm(true)}
-                  >
-                    Test Result Reference Guideline {showGuidelinesForm ? "-" : "+"}
-                  </Typography>
                 </Grid>
               )}
 
-              {/* Test Result Reference Guideline (Expands to Full Width) */}
-              {showGuidelinesForm && (
-                <Grid item xs={12}>
+              {shouldShowGuidelines && !showGuidelinesForm && (
+                <Grid
+                  item
+                  xs={6}
+                  display="flex"
+                  alignItems="center"
+                  justifyContent="space-between"
+                >
                   <Typography
                     variant="h6"
                     className="result-guidelines"
-                    sx={{ cursor: "pointer" }}
-                    onClick={() => setShowGuidelinesForm(false)}
+                    onClick={() => setShow(true)}
                   >
-                    Test Result Reference Guideline -
+                    Test Result Reference Guideline
                   </Typography>
+               
+                </Grid>
+              )}
+
+     
+              {showGuidelinesForm && (
+                <Grid item xs={12}>
+                  <Box
+                    display="flex"
+                    alignItems="center"
+                    justifyContent="space-between"
+                  >
+                    <Typography variant="h6" className="result-guidelines">
+                      Test Result Reference Guideline
+                    </Typography>
+                    <Fab
+                      size="small"
+                      color="secondary"
+                      onClick={() => setShowGuidelinesForm(false)}
+                    >
+                      <RemoveIcon />
+                    </Fab>
+                  </Box>
+
                   <Grid container spacing={2} marginTop={1}>
-                    <Grid item xs={6}>
-                      <TextField fullWidth label="Ref Name" />
+                    <Grid item xs={3}>
+                      <TextField fullWidth label="Ref Name" variant="filled" />
                     </Grid>
                     {selectedValues.AgeBasedStandard === "Yes" && (
                       <>
                         <Grid item xs={3}>
-                          <TextField fullWidth label="Age From" type="number" />
+                          <TextField
+                            fullWidth
+                            label="Age From"
+                            type="number"
+                            variant="filled"
+                          />
                         </Grid>
                         <Grid item xs={3}>
-                          <TextField fullWidth label="Age To" type="number" />
+                          <TextField
+                            fullWidth
+                            label="Age To"
+                            type="number"
+                            variant="filled"
+                          />
                         </Grid>
                       </>
                     )}
                     {selectedValues.GenderBasedStandard === "Yes" && (
                       <Grid item xs={3}>
-                        <FormControl fullWidth>
+                        <FormControl fullWidth variant="filled">
                           <InputLabel>Gender</InputLabel>
-                          <Select value={selectedGender} onChange={(e) => setSelectedGender(e.target.value)}>
+                          <Select
+                            value={selectedValues.gender}
+                            onChange={(e) => handleDropdownChange(e, "gender")}
+                          >
                             <MenuItem value="male">Male</MenuItem>
                             <MenuItem value="female">Female</MenuItem>
                             <MenuItem value="other">Other</MenuItem>
@@ -414,11 +489,19 @@ const TestForm = ({ toggleForm ,refreshTable}) => {
                         </FormControl>
                       </Grid>
                     )}
-                    <Grid item xs={6}>
-                      <TextField fullWidth label="Starting Value" />
+                    <Grid item xs={4}>
+                      <TextField
+                        fullWidth
+                        label="Starting Value"
+                        variant="filled"
+                      />
                     </Grid>
-                    <Grid item xs={6}>
-                      <TextField fullWidth label="Ending Value" />
+                    <Grid item xs={4}>
+                      <TextField
+                        fullWidth
+                        label="Ending Value"
+                        variant="filled"
+                      />
                     </Grid>
                   </Grid>
                 </Grid>
@@ -426,36 +509,47 @@ const TestForm = ({ toggleForm ,refreshTable}) => {
             </Grid>
           </Box>
 
-          
-
           {/* Selection Dropdowns */}
-          {!showGuidelinesForm && (
+          {!showGuidelinesForm && !show && (
             <div>
-            <Grid container spacing={2} marginTop={2}>
-              {[
-                "AgeBasedStandard",
-                "GenderBasedStandard",
-                "PregnancyFactorApplicable",
-                "IsEmpupdatethisresult",
-                "IsImageUploadapplicable",
-                "IsdoctorCommentsApplicable",
-                "IsreportImpressionisRequired",
-                "IsvalueRequired",
-              ].map((key) => (
-                <Grid item xs={3} key={key} >
-                  <FormControl fullWidth >
-                    <InputLabel>{key.replace(/([A-Z])/g, " $1").trim()}</InputLabel>
-                    <Select value={selectedValues[key]} onChange={(e) => handleDropdownChange(e, key)}>
-                      <MenuItem value="Yes">Yes</MenuItem>
-                      <MenuItem value="No">No</MenuItem>
-                    </Select>
-                  </FormControl>
-                </Grid>
-              ))}
-            </Grid>
+              <Grid container spacing={2} marginTop={2}>
+                {[
+                  "AgeBasedStandard",
+                  "GenderBasedStandard",
+                  "PregnancyFactorApplicable",
+                  "IsEmpupdatethisresult",
+                  "IsImageUploadapplicable",
+                  "IsdoctorCommentsApplicable",
+                  "IsreportImpressionisRequired",
+                  "IsvalueRequired",
+                ].map((key) => (
+                  <Grid item xs={3} key={key}>
+                    <FormControl fullWidth variant="filled">
+                      <InputLabel>
+                        {key.replace(/([A-Z])/g, " $1").trim()}
+                      </InputLabel>
+                      <Select
+                        value={selectedValues[key]}
+                        onChange={(e) => handleDropdownChange(e, key)}
+                      >
+                        <MenuItem value="Yes">Yes</MenuItem>
+                        <MenuItem value="No">No</MenuItem>
+                      </Select>
+                    </FormControl>
+                  </Grid>
+                ))}
+              </Grid>
             </div>
           )}
-
+          {show && (
+            <Fab
+              size="small"
+              color="primary"
+              onClick={() => setShowGuidelinesForm(true)}
+            >
+              <AddIcon />
+            </Fab>
+          )}
           {/* TextArea for Additional Comments */}
           <Box className="textarea-container">
             <TextField
@@ -463,16 +557,21 @@ const TestForm = ({ toggleForm ,refreshTable}) => {
               label="Test Description"
               value={selectedValues.additionalComments}
               onChange={handleTextareaChange}
+              variant="filled"
             />
           </Box>
 
           {/* Buttons */}
           <Box className="option-btn">
-            <Button variant="outlined"   onClick={() => navigate("/TestTable")}  className="cancel">
+            <Button
+              variant="outlined"
+              onClick={() => navigate("/TestTable")}
+              className="cancel"
+            >
               Cancel
             </Button>
             <Button variant="contained" className="save" onClick={handleSubmit}>
-            {testId ? "Update" : "Save"}
+              {testId ? "Update" : "Save"}
             </Button>
           </Box>
         </CardContent>
@@ -482,5 +581,3 @@ const TestForm = ({ toggleForm ,refreshTable}) => {
 };
 
 export default TestForm;
-
-
