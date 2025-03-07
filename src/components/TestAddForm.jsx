@@ -21,9 +21,12 @@ import { useParams } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import AddIcon from "@mui/icons-material/Add";
 import RemoveIcon from "@mui/icons-material/Remove";
+import { PlusCircle, MinusCircle, ChevronDown, ChevronUp } from "lucide-react";
 
+import IconButton from "@mui/material/IconButton";
+import DeleteIcon from "@mui/icons-material/Delete";
 const TestForm = ({ toggleForm, refreshTable }) => {
-  const [selectedValues, setSelectedValues] = useState({
+const [selectedValues, setSelectedValues] = useState({
     lab_test_id: "",
     test_name: "",
     method: "",
@@ -54,6 +57,20 @@ const TestForm = ({ toggleForm, refreshTable }) => {
   const { testId } = useParams();
   const navigate = useNavigate();
   const [show, setShow] = useState(false);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [selectedGender, setSelectedGender] = useState("");
+  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [hasVisited, setHasVisited] = useState(false); 
+  const [showConfig, setShowConfig] = useState(true);
+  const [showGuidelines, setShowGuidelines] = useState(false);
+  const [showGuidelineForm, setShowGuidelineForm] = useState(false);
+  const [formCount, setFormCount] = useState(0);
+  const [hasGuidelines, setHasGuidelines] = useState(false);
+
+  const shouldShowGuidelines =
+    selectedValues.AgeBasedStandard !== "" &&
+    selectedValues.GenderBasedStandard !== "" &&
+    selectedValues.PregnancyFactorApplicable !== "";
 
   const token = localStorage.getItem("authToken");
 
@@ -61,6 +78,10 @@ const TestForm = ({ toggleForm, refreshTable }) => {
     console.log("Fetching test data for:", testId);
 
     if (!testId || !token) {
+      const shouldShowGuidelines =
+        selectedValues.AgeBasedStandard !== "" &&
+        selectedValues.GenderBasedStandard !== "" &&
+        selectedValues.PregnancyFactorApplicable !== "";
       console.error("Missing testId or token!");
       return;
     }
@@ -84,12 +105,13 @@ const TestForm = ({ toggleForm, refreshTable }) => {
           console.log("Fetched data:", res.data[0]);
 
           const fetchedData = res.data[0];
-          const firstGuideline = fetchedData.test_result_guidelines?.[0] || {};
-
+        
+          const guidelinesExist = fetchedData.test_result_guidelines?.length > 0;
+          console.log(guidelinesExist)
           setSelectedValues((prevState) => ({
             ...prevState,
             lab_test_id: fetchedData.test_id || prevState.lab_test_id,
-            test_name: fetchedData.test_name || prevState.test_name,
+            test_name: fetchedData.test_name || prevState.test_name, 
             method: fetchedData.method || prevState.method,
             short_name: fetchedData.short_name || prevState.short_name,
             uom: fetchedData.uom || prevState.uom,
@@ -128,17 +150,14 @@ const TestForm = ({ toggleForm, refreshTable }) => {
             IsreportImpressionisRequired:
               fetchedData.is_report_impression_required ? "Yes" : "No",
             IsvalueRequired: fetchedData.is_value_applicable ? "Yes" : "No",
-            guideline_name: firstGuideline.name || prevState.guideline_name,
-            age_from: firstGuideline.age_from || prevState.age_from,
-            age_to: firstGuideline.age_to || prevState.age_to,
-            gender: firstGuideline.gender || prevState.gender,
-            guideline_starting_value:
-              firstGuideline.starting_value ||
-              prevState.guideline_starting_value,
-            guideline_ending_value:
-              firstGuideline.ending_value || prevState.guideline_ending_value,
+            test_result_guidelines: guidelinesExist ? fetchedData.test_result_guidelines : [],
 
-            test_result_guidelines: fetchedData.test_result_guidelines || [],
+            guideline_name: guidelinesExist ? fetchedData.test_result_guidelines[0].name : "",
+            age_from: guidelinesExist ? fetchedData.test_result_guidelines[0].age_from : "",
+            age_to: guidelinesExist ? fetchedData.test_result_guidelines[0].age_to : "",
+            gender: guidelinesExist ? fetchedData.test_result_guidelines[0].gender : "",
+            guideline_starting_value: guidelinesExist ? fetchedData.test_result_guidelines[0].starting_value : "",
+            guideline_ending_value: guidelinesExist ? fetchedData.test_result_guidelines[0].ending_value : "",
           }));
         } else {
           console.error("No data found in response:", res);
@@ -147,41 +166,68 @@ const TestForm = ({ toggleForm, refreshTable }) => {
       .catch((error) => console.error("Error fetching test:", error));
   }, [testId, token]);
 
-  const [selectedGender, setSelectedGender] = useState("");
-  const [isSubmitted, setIsSubmitted] = useState(false);
-
-  const [showGuidelinesForm, setShowGuidelinesForm] = useState(false);
-  const handleInputChange = (event) => {
-    const { name, value } = event.target;
-    setSelectedValues((prevState) => ({
-      ...prevState,
-      [name]: value,
-    }));
-  };
-
-  const handleDropdownChange = (event, key) => {
-    console.log(`Updating ${key} to:`, event.target.value);
-    setSelectedValues((prevState) => ({
-      ...prevState,
-      [key]: event.target.value,
-    }));
-  };
-
   const handleTextareaChange = (event) => {
     setSelectedValues((prevState) => ({
       ...prevState,
       additionalComments: event.target.value,
     }));
   };
+  const handleConfigClick = () => {
+    setShowConfig(!showConfig);
+    if (showConfig) {
+      setShowGuidelines(false);
+      setShowGuidelineForm(false);
+    }
+  };
+
+ 
+  const handleGuidelinesClick = () => {
+    if (shouldShowGuidelines) {
+      if (!hasVisited) {
+        setHasVisited(true); // Mark form as visited
+      }
+      setShowGuidelines(!showGuidelines);
+      setShowConfig(false);
+      setShowGuidelineForm(true); // Show the form directly
+    }
+  };
+  
+  const handleAddForm = () => {
+    setFormCount((prev) => prev + 1);
+    setShowGuidelineForm(true);
+    setShowGuidelines(false);
+  };
+
+  const handleRemoveForm = (index) => {
+    setFormCount(prev => Math.max(0, prev - 1));
+    if (formCount <= 1) {
+      setShowGuidelineForm(false);
+      setShowGuidelines(true);
+    }
+  };
+  const handleDropdownChange = (event, field) => {
+    setSelectedValues((prev) => ({
+      ...prev,
+      [field]: event.target.value,
+    }));
+  };
+
+  const handleInputChange = (event) => {
+    const { name, value } = event.target;
+    setSelectedValues((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
 
   const handleSubmit = async () => {
     setIsSubmitted(true); // Mark form as submitted
-
     if (
       !selectedValues.lab_test_id.trim() ||
       !selectedValues.test_name.trim()
     ) {
-      return; // Stop submission if required fields are empty
+      return; 
+    
     }
 
     const requestData = {
@@ -229,6 +275,7 @@ const TestForm = ({ toggleForm, refreshTable }) => {
             }
           : null,
       ].filter(Boolean),
+           
     };
 
     try {
@@ -249,11 +296,6 @@ const TestForm = ({ toggleForm, refreshTable }) => {
     }
   };
 
-  const shouldShowGuidelines =
-    selectedValues.AgeBasedStandard !== "" &&
-    selectedValues.GenderBasedStandard !== "" &&
-    selectedValues.PregnancyFactorApplicable !== "";
-
   return (
     <Container minWidth="700px">
       <Card className="card">
@@ -272,7 +314,7 @@ const TestForm = ({ toggleForm, refreshTable }) => {
                 variant="filled"
                 value={selectedValues.lab_test_id}
                 onChange={handleInputChange}
-                error={isSubmitted && !selectedValues.lab_test_id.trim()} // Show error only after submission
+                error={isSubmitted && !selectedValues.lab_test_id.trim()}
                 helperText={
                   isSubmitted && !selectedValues.lab_test_id.trim()
                     ? "This field is required"
@@ -289,9 +331,9 @@ const TestForm = ({ toggleForm, refreshTable }) => {
                 value={selectedValues.test_name}
                 onChange={handleInputChange}
                 variant="filled"
-                error={isSubmitted && !selectedValues.lab_test_id.trim()} // Show error only after submission
+                error={isSubmitted && !selectedValues.test_name.trim()}
                 helperText={
-                  isSubmitted && !selectedValues.lab_test_id.trim()
+                  isSubmitted && !selectedValues.test_name.trim()
                     ? "This field is required"
                     : ""
                 }
@@ -358,8 +400,6 @@ const TestForm = ({ toggleForm, refreshTable }) => {
             </Grid>
             <Grid item xs={6}>
               <FormControl fullWidth variant="filled">
-                {" "}
-                {/* Apply variant here */}
                 <InputLabel>Result Output Type</InputLabel>
                 <Select
                   name="result_output_type"
@@ -374,7 +414,6 @@ const TestForm = ({ toggleForm, refreshTable }) => {
               </FormControl>
             </Grid>
           </Grid>
-          {/* Second Row */}
           <Grid container spacing={2} marginTop={2}>
             <Grid item xs={6}>
               <TextField
@@ -399,89 +438,130 @@ const TestForm = ({ toggleForm, refreshTable }) => {
           </Grid>
 
           {/* Configuration and Guidelines */}
-          {/* Configuration and Guidelines */}
-          <Box marginTop={3}>
-            <Grid container spacing={2}>
-              {/* Configuration Section */}
-              {!showGuidelinesForm && (
-                <Grid item xs={shouldShowGuidelines ? 6 : 12}>
-                  <Typography variant="h6" className="config">
-                    Configuration
-                  </Typography>
-                </Grid>
-              )}
-
-              {shouldShowGuidelines && !showGuidelinesForm && (
-                <Grid
-                  item
-                  xs={6}
-                  display="flex"
-                  alignItems="center"
-                  justifyContent="space-between"
-                >
-                  <Typography
-                    variant="h6"
-                    className="result-guidelines"
-                    onClick={() => setShow(true)}
-                  >
-                    Test Result Reference Guideline
-                  </Typography>
+          {/* Configuration and Guidelines Headers */}
+          <Grid container spacing={2} marginTop={2} className="mt-8">
+            <Grid item xs={shouldShowGuidelines ? 6 : 12}  className="config">
+              <Button
                
-                </Grid>
-              )}
+                onClick={handleConfigClick}
+                variant="filled"
+                
+               
+                
+                endIcon={
+                  showConfig ? (
+                    <ChevronUp className="w-5 h-5" />
+                  ) : (
+                    <ChevronDown className="w-5 h-5" />
+                  )
+                }
+              >
+                Configuration
+              </Button>
+            </Grid>
+            {shouldShowGuidelines && (
+              <Grid item xs={6} className="result-guidelines">
+                <Button
+                  fullWidth
+                  onClick={handleGuidelinesClick}
+                  className="justify-between"
+                  variant="filled"
+                  endIcon={
+                    showGuidelines ? (
+                      <ChevronUp className="w-5 h-5" />
+                    ) : (
+                      <ChevronDown className="w-5 h-5" />
+                    )
+                  }
+                >
+                  Test Result Reference Guidelines
+                </Button>
+              </Grid>
+            )}
+          </Grid>
 
-     
-              {showGuidelinesForm && (
-                <Grid item xs={12}>
-                  <Box
-                    display="flex"
-                    alignItems="center"
-                    justifyContent="space-between"
-                  >
-                    <Typography variant="h6" className="result-guidelines">
-                      Test Result Reference Guideline
-                    </Typography>
-                    <Fab
-                      size="small"
-                      color="secondary"
-                      onClick={() => setShowGuidelinesForm(false)}
+          {/* Configuration Section */}
+          {showConfig && (
+            <Grid container spacing={2} className="mt-4">
+              {[
+                "AgeBasedStandard",
+                "GenderBasedStandard",
+                "PregnancyFactorApplicable",
+                "IsEmpupdatethisresult",
+                "IsImageUploadapplicable",
+                "IsdoctorCommentsApplicable",
+                "IsreportImpressionisRequired",
+                "IsvalueRequired",
+              ].map((field) => (
+                <Grid item xs={3} key={field}>
+                  <FormControl fullWidth variant="filled">
+                    <InputLabel>
+                      {field.replace(/([A-Z])/g, " $1").trim()}
+                    </InputLabel>
+                    <Select
+                      value={selectedValues[field]}
+                      onChange={(e) => handleDropdownChange(e, field)}
+                      label={field.replace(/([A-Z])/g, " $1").trim()}
                     >
-                      <RemoveIcon />
-                    </Fab>
-                  </Box>
+                      <MenuItem value="Yes">Yes</MenuItem>
+                      <MenuItem value="No">No</MenuItem>
+                    </Select>
+                  </FormControl>
+                </Grid>
+              ))}
+            </Grid>
+          )}
 
-                  <Grid container spacing={2} marginTop={1}>
-                    <Grid item xs={3}>
-                      <TextField fullWidth label="Ref Name" variant="filled" />
+          {/* Guidelines Section */}
+          { shouldShowGuidelines && showGuidelines && !showGuidelineForm && (
+            <Box className="flex justify-center mt-4">
+              <Fab color="primary" onClick={handleAddForm} size="medium">
+                < AddIcon className="w-5 h-5" />
+              </Fab>
+            </Box>
+          )}
+
+          {/* Guidelines Form */}
+          {showGuidelineForm && shouldShowGuidelines &&  !showConfig&&(
+            <Box className="space-y-4 mt-4">
+              {[...Array(formCount)].map((_, index) => (
+                <Card key={index} variant="filled" className="p-4">
+                  <Grid container spacing={2}>
+                    <Grid item xs={12} md={4}>
+                      <TextField
+                        fullWidth
+                        label="Reference Name"
+                        name={`guideline_name_${index}`}
+                        variant="filled"
+                      />
                     </Grid>
                     {selectedValues.AgeBasedStandard === "Yes" && (
                       <>
-                        <Grid item xs={3}>
+                        <Grid item xs={6} md={2}>
                           <TextField
                             fullWidth
                             label="Age From"
                             type="number"
+                            name={`age_from_${index}`}
                             variant="filled"
                           />
                         </Grid>
-                        <Grid item xs={3}>
+                        <Grid item xs={6} md={2}>
                           <TextField
                             fullWidth
                             label="Age To"
                             type="number"
+                            name={`age_to_${index}`}
                             variant="filled"
                           />
                         </Grid>
                       </>
                     )}
                     {selectedValues.GenderBasedStandard === "Yes" && (
-                      <Grid item xs={3}>
+                      <Grid item xs={12} md={4}>
                         <FormControl fullWidth variant="filled">
                           <InputLabel>Gender</InputLabel>
-                          <Select
-                            value={selectedValues.gender}
-                            onChange={(e) => handleDropdownChange(e, "gender")}
-                          >
+                          <Select label="Gender" name={`gender_${index}`}>
                             <MenuItem value="male">Male</MenuItem>
                             <MenuItem value="female">Female</MenuItem>
                             <MenuItem value="other">Other</MenuItem>
@@ -489,67 +569,38 @@ const TestForm = ({ toggleForm, refreshTable }) => {
                         </FormControl>
                       </Grid>
                     )}
-                    <Grid item xs={4}>
+                    <Grid item xs={12} md={4}>
                       <TextField
                         fullWidth
                         label="Starting Value"
+                        name={`starting_value_${index}`}
                         variant="filled"
                       />
                     </Grid>
-                    <Grid item xs={4}>
+                    <Grid item xs={12} md={4}>
                       <TextField
                         fullWidth
                         label="Ending Value"
+                        name={`ending_value_${index}`}
                         variant="filled"
                       />
                     </Grid>
+                    <Grid item xs={12} className="flex justify-end">
+                      <IconButton onClick={() => handleRemoveForm(index)}>
+                        <DeleteIcon className="w-5 h-5" />
+                      </IconButton>
+                    </Grid>
                   </Grid>
-                </Grid>
-              )}
-            </Grid>
-          </Box>
+                </Card>
+              ))}
+              <Box className="flex justify-center">
+                <Fab color="primary" onClick={handleAddForm} size="medium">
+                  <AddIcon className="w-5 h-5" />
+                </Fab>
+              </Box>
+            </Box>
+          )}
 
-          {/* Selection Dropdowns */}
-          {!showGuidelinesForm && !show && (
-            <div>
-              <Grid container spacing={2} marginTop={2}>
-                {[
-                  "AgeBasedStandard",
-                  "GenderBasedStandard",
-                  "PregnancyFactorApplicable",
-                  "IsEmpupdatethisresult",
-                  "IsImageUploadapplicable",
-                  "IsdoctorCommentsApplicable",
-                  "IsreportImpressionisRequired",
-                  "IsvalueRequired",
-                ].map((key) => (
-                  <Grid item xs={3} key={key}>
-                    <FormControl fullWidth variant="filled">
-                      <InputLabel>
-                        {key.replace(/([A-Z])/g, " $1").trim()}
-                      </InputLabel>
-                      <Select
-                        value={selectedValues[key]}
-                        onChange={(e) => handleDropdownChange(e, key)}
-                      >
-                        <MenuItem value="Yes">Yes</MenuItem>
-                        <MenuItem value="No">No</MenuItem>
-                      </Select>
-                    </FormControl>
-                  </Grid>
-                ))}
-              </Grid>
-            </div>
-          )}
-          {show && (
-            <Fab
-              size="small"
-              color="primary"
-              onClick={() => setShowGuidelinesForm(true)}
-            >
-              <AddIcon />
-            </Fab>
-          )}
           {/* TextArea for Additional Comments */}
           <Box className="textarea-container">
             <TextField

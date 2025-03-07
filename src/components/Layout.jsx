@@ -14,7 +14,7 @@ const Layout = () => {
         </div>
 
    
-        <div style={{ width: "80%", padding: "5px" }}>
+        <div style={{ width: "80%", padding: "" }}>
           <Outlet />  
         </div>
       </div>

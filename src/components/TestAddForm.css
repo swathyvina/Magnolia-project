@@ -92,6 +92,8 @@ select:focus {
   justify-content: center;
   font-size: 14px;
   color:grey;
+
+  
 }
 
 /* Result Reference Guidelines panel styling */
@@ -207,4 +209,8 @@ select:focus {
   .side-by-side {
     flex-direction: column;
   }
+}
+.icon{
+  display: flex;
+  justify-content: center;
 }
