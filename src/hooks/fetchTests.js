@@ -35,21 +35,3 @@ export const fetchTests = async () => {
 };
 
 
-// export const fetchTests = async () => {
-//   try {
-//     const response = await fetch("https://jsonplaceholder.typicode.com/posts");
-//     const data = await response.json();
-
-//     // Convert dummy API response to match your structure
-//     return data.map((item) => ({
-//       id: item.id.toString(),  // Convert number to string if needed
-//       name: item.title,
-//       shortName: item.title.substring(0, 5),
-//       uom: "Unit",
-//       createdOn: new Date().toISOString().split("T")[0], // Example date
-//     }));
-//   } catch (error) {
-//     console.error("Error fetching tests:", error);
-//     return [];
-//   }
-// };

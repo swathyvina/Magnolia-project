@@ -9,7 +9,7 @@ const Layout = () => {
       <CustomNavbar />
       <div style={{ display: "flex", height: "100vh" }}>
        
-        <div style={{ width: "20%", background: "#f4f4f4", padding: "10px" }}>
+        <div style={{ width: "17%", background: "#f4f4f4", padding: "10px" }}>
           <Sidebar />
         </div>
 

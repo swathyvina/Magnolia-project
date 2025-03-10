@@ -16,12 +16,13 @@ import {
   Box,
 } from "@mui/material";
 import { postLabTest } from "../hooks/apipost";
+import createTest from "../hooks/API.tsx"
 import { updateTest } from "../hooks/updatetest";
 import { useParams } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import AddIcon from "@mui/icons-material/Add";
 import RemoveIcon from "@mui/icons-material/Remove";
-import { PlusCircle, MinusCircle, ChevronDown, ChevronUp } from "lucide-react";
+
 
 import IconButton from "@mui/material/IconButton";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -219,7 +220,24 @@ const [selectedValues, setSelectedValues] = useState({
       [name]: value,
     }));
   };
-
+  const handleGuide= (index, field, value) => {
+    setSelectedValues((prevValues) => {
+      const updatedGuidelines = [...(prevValues.test_result_guidelines || [])];
+      
+      // Ensure index exists in the array
+      if (!updatedGuidelines[index]) {
+        updatedGuidelines[index] = {};
+      }
+  
+      updatedGuidelines[index][field] = value;
+  
+      return {
+        ...prevValues,
+        test_result_guidelines: updatedGuidelines,
+      };
+    });
+  };
+  
   const handleSubmit = async () => {
     setIsSubmitted(true); // Mark form as submitted
     if (
@@ -230,53 +248,50 @@ const [selectedValues, setSelectedValues] = useState({
     
     }
 
-    const requestData = {
-      test_id: selectedValues.lab_test_id,
-      test_name: selectedValues.test_name,
-      method: selectedValues.method,
-      short_name: selectedValues.short_name,
-      uom: selectedValues.uom,
-      test_category: selectedValues.test_category,
-      result_output_type: selectedValues.result_output_type,
-
-      starting_value: Number(selectedValues.starting_value) || 0,
-      ending_value: Number(selectedValues.ending_value) || 0,
-      ...(selectedValues.AgeBasedStandard && {
-        is_age_based_standard: selectedValues.AgeBasedStandard === "Yes",
-      }),
-      ...(selectedValues.GenderBasedStandard && {
-        is_gender_based_standard: selectedValues.GenderBasedStandard === "Yes",
-      }),
-      ...(selectedValues.PregnancyFactorApplicable && {
-        is_pregnancy_factor_applicable:
-          selectedValues.PregnancyFactorApplicable === "Yes",
-      }),
-
-      employee_test_applicable: selectedValues.IsEmpupdatethisresult === "Yes",
-      is_image_upload_applicable:
-        selectedValues.IsImageUploadapplicable === "Yes",
-      is_doctor_comments_applicable:
-        selectedValues.IsdoctorCommentsApplicable === "Yes",
-      is_report_impression_required:
-        selectedValues.IsreportImpressionisRequired === "Yes",
-      is_value_applicable: selectedValues.IsvalueRequired === "Yes",
-      description: selectedValues.additionalComments,
-
-      test_result_guidelines: [
-        ...(selectedValues.test_result_guidelines || []),
-        selectedValues.guideline_name
-          ? {
-              name: selectedValues.guideline_name,
-              age_from: Number(selectedValues.age_from) || 0,
-              age_to: Number(selectedValues.age_to) || 0,
-              gender: selectedValues.gender || "",
-              starting_value: selectedValues.guideline_starting_value || "",
-              ending_value: selectedValues.guideline_ending_value || "",
-            }
-          : null,
-      ].filter(Boolean),
-           
-    };
+    const test_result_guidelines = selectedValues.test_result_guidelines
+    ? [...selectedValues.test_result_guidelines]
+    : [];
+  
+    if (selectedValues.guideline_name) {
+    test_result_guidelines.push({
+      name: selectedValues.guideline_name,
+      age_from: selectedValues.age_from ? Number(selectedValues.age_from) : 0,
+      age_to: selectedValues.age_to ? Number(selectedValues.age_to) : 0,
+      gender: selectedValues.gender || "",
+      starting_value: selectedValues.guideline_starting_value || "",
+      ending_value: selectedValues.guideline_ending_value || "",
+    });
+  }
+  
+  const requestData = {
+    test_id: selectedValues.lab_test_id,
+    test_name: selectedValues.test_name,
+    method: selectedValues.method,
+    short_name: selectedValues.short_name,
+    uom: selectedValues.uom,
+    test_category: selectedValues.test_category,
+    result_output_type: selectedValues.result_output_type,
+  
+    starting_value: Number(selectedValues.starting_value) || 0,
+    ending_value: Number(selectedValues.ending_value) || 0,
+  
+    is_age_based_standard: selectedValues.AgeBasedStandard === "Yes",
+    is_gender_based_standard: selectedValues.GenderBasedStandard === "Yes",
+    is_pregnancy_factor_applicable:
+      selectedValues.PregnancyFactorApplicable === "Yes",
+  
+    employee_test_applicable: selectedValues.IsEmpupdatethisresult === "Yes",
+    is_image_upload_applicable: selectedValues.IsImageUploadapplicable === "Yes",
+    is_doctor_comments_applicable:
+      selectedValues.IsdoctorCommentsApplicable === "Yes",
+    is_report_impression_required:
+      selectedValues.IsreportImpressionisRequired === "Yes",
+    is_value_applicable: selectedValues.IsvalueRequired === "Yes",
+    description: selectedValues.additionalComments,
+  
+    test_result_guidelines, // Updated guidelines array
+  };
+  
 
     try {
       let response;
@@ -448,13 +463,7 @@ const [selectedValues, setSelectedValues] = useState({
                 
                
                 
-                endIcon={
-                  showConfig ? (
-                    <ChevronUp className="w-5 h-5" />
-                  ) : (
-                    <ChevronDown className="w-5 h-5" />
-                  )
-                }
+            
               >
                 Configuration
               </Button>
@@ -466,13 +475,7 @@ const [selectedValues, setSelectedValues] = useState({
                   onClick={handleGuidelinesClick}
                   className="justify-between"
                   variant="filled"
-                  endIcon={
-                    showGuidelines ? (
-                      <ChevronUp className="w-5 h-5" />
-                    ) : (
-                      <ChevronDown className="w-5 h-5" />
-                    )
-                  }
+                 
                 >
                   Test Result Reference Guidelines
                 </Button>
@@ -522,84 +525,102 @@ const [selectedValues, setSelectedValues] = useState({
           )}
 
           {/* Guidelines Form */}
-          {showGuidelineForm && shouldShowGuidelines &&  !showConfig&&(
-            <Box className="space-y-4 mt-4">
-              {[...Array(formCount)].map((_, index) => (
-                <Card key={index} variant="filled" className="p-4">
-                  <Grid container spacing={2}>
-                    <Grid item xs={12} md={4}>
-                      <TextField
-                        fullWidth
-                        label="Reference Name"
-                        name={`guideline_name_${index}`}
-                        variant="filled"
-                      />
-                    </Grid>
-                    {selectedValues.AgeBasedStandard === "Yes" && (
-                      <>
-                        <Grid item xs={6} md={2}>
-                          <TextField
-                            fullWidth
-                            label="Age From"
-                            type="number"
-                            name={`age_from_${index}`}
-                            variant="filled"
-                          />
-                        </Grid>
-                        <Grid item xs={6} md={2}>
-                          <TextField
-                            fullWidth
-                            label="Age To"
-                            type="number"
-                            name={`age_to_${index}`}
-                            variant="filled"
-                          />
-                        </Grid>
-                      </>
-                    )}
-                    {selectedValues.GenderBasedStandard === "Yes" && (
-                      <Grid item xs={12} md={4}>
-                        <FormControl fullWidth variant="filled">
-                          <InputLabel>Gender</InputLabel>
-                          <Select label="Gender" name={`gender_${index}`}>
-                            <MenuItem value="male">Male</MenuItem>
-                            <MenuItem value="female">Female</MenuItem>
-                            <MenuItem value="other">Other</MenuItem>
-                          </Select>
-                        </FormControl>
-                      </Grid>
-                    )}
-                    <Grid item xs={12} md={4}>
-                      <TextField
-                        fullWidth
-                        label="Starting Value"
-                        name={`starting_value_${index}`}
-                        variant="filled"
-                      />
-                    </Grid>
-                    <Grid item xs={12} md={4}>
-                      <TextField
-                        fullWidth
-                        label="Ending Value"
-                        name={`ending_value_${index}`}
-                        variant="filled"
-                      />
-                    </Grid>
-                    <Grid item xs={12} className="flex justify-end">
-                      <IconButton onClick={() => handleRemoveForm(index)}>
-                        <DeleteIcon className="w-5 h-5" />
-                      </IconButton>
-                    </Grid>
-                  </Grid>
-                </Card>
-              ))}
-              <Box className="flex justify-center">
-                <Fab color="primary" onClick={handleAddForm} size="medium">
-                  <AddIcon className="w-5 h-5" />
-                </Fab>
-              </Box>
-            </Box>
+          {showGuidelineForm && shouldShowGuidelines && !showConfig && (
+  <Box className="space-y-4 mt-4">
+    {[...Array(formCount)].map((_, index) => (
+      <Card key={index} variant="filled" className="p-4">
+        <Grid container spacing={2}>
+          <Grid item xs={12} md={4}>
+            <TextField
+              fullWidth
+              label="Reference Name"
+              name={`guideline_name_${index}`}
+              variant="filled"
+              value={selectedValues.test_result_guidelines?.[index]?.guideline_name || ""}
+              onChange={(e) => handleGuide(index, "guideline_name", e.target.value)}
+            />
+          </Grid>
+
+          {selectedValues.AgeBasedStandard === "Yes" && (
+            <>
+              <Grid item xs={6} md={2}>
+                <TextField
+                  fullWidth
+                  label="Age From"
+                  type="number"
+                  name={`age_from_${index}`}
+                  variant="filled"
+                  value={selectedValues.test_result_guidelines?.[index]?.age_from || ""}
+                  onChange={(e) => handleGuide(index, "age_from", e.target.value)}
+                />
+              </Grid>
+              <Grid item xs={6} md={2}>
+                <TextField
+                  fullWidth
+                  label="Age To"
+                  type="number"
+                  name={`age_to_${index}`}
+                  variant="filled"
+                  value={selectedValues.test_result_guidelines?.[index]?.age_to || ""}
+                  onChange={(e) => handleGuide(index, "age_to", e.target.value)}
+                />
+              </Grid>
+            </>
           )}
+
+          {selectedValues.GenderBasedStandard === "Yes" && (
+            <Grid item xs={12} md={4}>
+              <FormControl fullWidth variant="filled">
+                <InputLabel>Gender</InputLabel>
+                <Select
+                  name={`gender_${index}`}
+                  value={selectedValues.test_result_guidelines?.[index]?.gender || ""}
+                  onChange={(e) => handleGuide(index, "gender", e.target.value)}
+                >
+                  <MenuItem value="male">Male</MenuItem>
+                  <MenuItem value="female">Female</MenuItem>
+                  <MenuItem value="other">Other</MenuItem>
+                </Select>
+              </FormControl>
+            </Grid>
+          )}
+
+          <Grid item xs={12} md={4}>
+            <TextField
+              fullWidth
+              label="Starting Value"
+              name={`starting_value_${index}`}
+              variant="filled"
+              value={selectedValues.test_result_guidelines?.[index]?.starting_value || ""}
+              onChange={(e) => handleGuide(index, "starting_value", e.target.value)}
+            />
+          </Grid>
+          <Grid item xs={12} md={4}>
+            <TextField
+              fullWidth
+              label="Ending Value"
+              name={`ending_value_${index}`}
+              variant="filled"
+              value={selectedValues.test_result_guidelines?.[index]?.ending_value || ""}
+              onChange={(e) => handleGuide(index, "ending_value", e.target.value)}
+            />
+          </Grid>
+
+          <Grid item xs={12} className="flex justify-end">
+            <IconButton onClick={() => handleRemoveForm(index)}>
+              <DeleteIcon className="w-5 h-5" />
+            </IconButton>
+          </Grid>
+        </Grid>
+      </Card>
+    ))}
+    <Box className="flex justify-center">
+      <Fab color="primary" onClick={handleAddForm} size="medium">
+        <AddIcon className="w-5 h-5" />
+      </Fab>
+    </Box>
+  </Box>
+)}
 
           {/* TextArea for Additional Comments */}
           <Box className="textarea-container">
