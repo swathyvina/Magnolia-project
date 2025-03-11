@@ -1,102 +1,74 @@
-
-
-import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import Paper from "@mui/material/Paper";
-import Table from "@mui/material/Table";
-import TableBody from "@mui/material/TableBody";
-import TableCell from "@mui/material/TableCell";
-import TableContainer from "@mui/material/TableContainer";
-import TableHead from "@mui/material/TableHead";
-import TablePagination from "@mui/material/TablePagination";
-import TableRow from "@mui/material/TableRow";
-import Button from "@mui/material/Button";
-import IconButton from "@mui/material/IconButton";
-import MoreVertIcon from "@mui/icons-material/MoreVert";
-import Menu from "@mui/material/Menu";
-import MenuItem from "@mui/material/MenuItem";
-import TextField from "@mui/material/TextField";
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import Paper from '@mui/material/Paper';
+import Table from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody';
+import TableCell from '@mui/material/TableCell';
+import TableContainer from '@mui/material/TableContainer';
+import TableHead from '@mui/material/TableHead';
+import TablePagination from '@mui/material/TablePagination';
+import TableRow from '@mui/material/TableRow';
+import Button from '@mui/material/Button';
+import IconButton from '@mui/material/IconButton';
+import MoreVertIcon from '@mui/icons-material/MoreVert';
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
+import TextField from '@mui/material/TextField';
 import MenuIcon from '@mui/icons-material/Menu';
-import { Typography, Box } from "@mui/material";
+import { Typography, Box } from '@mui/material';
 
-import EditIcon from "@mui/icons-material/Edit";
-import DeleteIcon from "@mui/icons-material/Delete";
-import { fetchTests } from "../hooks/API.tsx";
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
+import { fetchTests, deleteTest } from '../hooks/API.tsx';
 
 const columns = [
-  { id: "test_id", label: "Test ID", minWidth: 100 },
-  { id: "test_name", label: "Name", minWidth: 170 },
-  { id: "short_name", label: "Short Name", minWidth: 100 },
-  { id: "uom", label: "UOM", minWidth: 100 },
-  { id: "created_on", label: "Created On", minWidth: 170 },
+  { id: 'test_id', label: 'Test ID', minWidth: 100 },
+  { id: 'test_name', label: 'Name', minWidth: 170 },
+  { id: 'short_name', label: 'Short Name', minWidth: 100 },
+  { id: 'uom', label: 'UOM', minWidth: 100 },
+  { id: 'created_on', label: 'Created On', minWidth: 170 },
 ];
 
 const TestTable = () => {
   const [tests, setTests] = useState([]);
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm, setSearchTerm] = useState('');
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [menuAnchor, setMenuAnchor] = useState(null);
   const [selectedTestId, setSelectedTestId] = useState(null);
   const navigate = useNavigate();
 
-  const token = localStorage.getItem("authToken");
+  const token = localStorage.getItem('authToken');
 
   useEffect(() => {
     if (!token) {
-      console.error("No token found. Please log in.");
+      console.error('No token found. Please log in.');
       return;
     }
-    fetchTests();
+    fetchTestsData();
   }, []);
 
-  const fetchTests = async () => {
+  const fetchTestsData = async () => {
     try {
-      const response = await fetch(
-        "https://api.teknologiunggul.com/entities/filter/lab_test",
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-            orgid: "intern_test",
-          },
-          body: JSON.stringify({}),
-        }
-      );
-      if (!response.ok) {
-        console.error(`Tests fetch error! Status: ${response.status}`);
-        return;
-      }
-      const res = await response.json();
+      const res = await fetchTests(token);
       if (res?.data?.length > 0 && res.data[0]?.response) {
         setTests(res.data[0].response);
       } else {
         setTests([]);
       }
     } catch (error) {
-      console.error("Error fetching tests:", error);
+      console.error('Error fetching tests:', error);
     }
   };
 
   const handleDelete = async (testId) => {
     try {
-      const response = await fetch(
-        `https://api.teknologiunggul.com/entities/lab_test/${testId}`,
-        {
-          method: "DELETE",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-            orgid: "intern_test",
-          },
-        }
-      );
-      if (response.ok) {
+      const isDeleted = await deleteTest(testId, token);
+      if (isDeleted) {
         setTests((prevTests) => prevTests.filter((test) => test._id !== testId));
       }
     } catch (error) {
-      console.error("Error deleting lab test:", error);
+      console.error('Error deleting lab test:', error);
     }
   };
 
@@ -126,8 +98,8 @@ const TestTable = () => {
   };
 
   return (
-    <Paper sx={{ width: "100%", overflow: "hidden", padding: 2 }}>
-      <Typography variant="h4" sx={{ color: "grey", fontSize: "25px" }}>
+    <Paper sx={{ width: '100%', overflow: 'hidden', padding: 2 }}>
+      <Typography variant="h4" sx={{ color: 'grey', fontSize: '25px' }}>
         TEST LIST
       </Typography>
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
@@ -136,16 +108,16 @@ const TestTable = () => {
             label="Search by ID or Name"
             variant="filled"
             onChange={(e) => setSearchTerm(e.target.value)}
-            sx={{ width: "200px" }}
+            sx={{ width: '200px' }}
           />
           <Button
             variant="contained"
             startIcon={<MenuIcon />}
-            onClick={fetchTests}
+            onClick={fetchTestsData}
             sx={{
-              backgroundColor: "#dd3d4e",
-              color: "white",
-              borderRadius: "25px",
+              backgroundColor: '#dd3d4e',
+              color: 'white',
+              borderRadius: '25px',
             }}
           >
             SHOW
@@ -154,12 +126,12 @@ const TestTable = () => {
 
         <Button
           variant="contained"
-          onClick={() => navigate("/addtest")}
+          onClick={() => navigate('/addtest')}
           sx={{
-            backgroundColor: "white",
-            color: "black",
-            borderRadius: "25px",
-            border: "2px solid #c82333",
+            backgroundColor: 'white',
+            color: 'black',
+            borderRadius: '25px',
+            border: '2px solid #c82333',
           }}
         >
           ADD NEW
@@ -171,14 +143,11 @@ const TestTable = () => {
           <TableHead>
             <TableRow>
               {columns.map((column) => (
-                <TableCell
-                  key={column.id}
-                  style={{ minWidth: column.minWidth ,fontWeight:"bold", }}
-                >
+                <TableCell key={column.id} style={{ minWidth: column.minWidth, fontWeight: 'bold' }}>
                   {column.label}
                 </TableCell>
               ))}
-              <TableCell style={{fontWeight:"bold"}}>Actions</TableCell>
+              <TableCell style={{ fontWeight: 'bold' }}>Actions</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -187,7 +156,7 @@ const TestTable = () => {
               .map((test) => (
                 <TableRow hover key={test._id}>
                   {columns.map((column) => (
-                    <TableCell key={column.id}>{test[column.id] || "N/A"}</TableCell>
+                    <TableCell key={column.id}>{test[column.id] || 'N/A'}</TableCell>
                   ))}
                   <TableCell>
                     <IconButton onClick={(event) => handleMenuOpen(event, test._id)}>
@@ -227,3 +196,5 @@ const TestTable = () => {
 };
 
 export default TestTable;
+
+

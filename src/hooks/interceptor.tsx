@@ -1,34 +1,30 @@
-// requestInterceptor.ts
 
-// Define the type for the options parameter
-interface RequestOptions extends RequestInit {
-    headers?: HeadersInit;
-    body?: BodyInit | null;
-  }
-  
-  // Define the requestInterceptor function with the appropriate types
-  const requestInterceptor = async (url: string, options: RequestOptions = {}): Promise<Response> => {
+import axios from "axios";
+
+
+const apiClient = axios.create({
+  baseURL: "https://api.teknologiunggul.com", 
+  headers: {
+    "Content-Type": "application/json",
+    "orgid": "intern_test",
+  },
+});
+
+
+apiClient.interceptors.request.use(
+  (config) => {
     const token = localStorage.getItem("authToken");
-  
-    if (!token) {
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    } else {
       console.error("No auth token found. Please log in.");
       throw new Error("No auth token found.");
     }
-  
-    const headers: HeadersInit = {
-      "Content-Type": "application/json",
-      "Authorization": `Bearer ${token}`,
-      "orgid": "intern_test",
-      ...options.headers, // Merge any additional headers passed in options
-    };
-  
-    const fetchOptions: RequestOptions = {
-      ...options,
-      headers,
-    };
-  
-    return fetch(url, fetchOptions);
-  };
-  
-  export default requestInterceptor;
-  
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
+export default apiClient;

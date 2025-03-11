@@ -1,14 +1,12 @@
-import requestInterceptor from './interceptor.tsx';
 
-// Define types for the requestData parameter and response
+import apiClient from "./interceptor.tsx";
+
 interface TestRequestData {
-  // Define the structure of requestData as needed
   name: string;
   description: string;
 }
 
 interface TestResponse {
-  // Define the structure of the response data
   data?: any;
 }
 
@@ -16,67 +14,48 @@ interface ErrorResponse {
   message: string;
 }
 
-// Fetch Tests - GET request
-export const fetchTests = async (): Promise<any[]> => {
-  const API_URL = "https://api.teknologiunggul.com/entities/filter/lab_test";
-  
+
+// PUT request
+export const updateTest = async ( testId: string, requestData: TestRequestData): Promise<any> => {
   try {
-    const response = await requestInterceptor(API_URL, {
-      method: "POST",  // You can also use GET if required for fetching data
-      body: JSON.stringify({}),
-    });
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! Status: ${response.status}`);
-    }
-
-    const data: TestResponse = await response.json();
-    console.log("API Response:", JSON.stringify(data, null, 2));
-    return data?.data || [];
-  } catch (error) {
-    console.error("Error fetching data:", error);
-    return [];
-  }
-};
-
-// Update Test - PUT request
-export const updateTest = async (testId: string, requestData: TestRequestData): Promise<any> => {
-  const url = `https://api.teknologiunggul.com/entities/lab_test/${testId}`;
-  
-  try {
-    const response = await requestInterceptor(url, {
-      method: "PUT",
-      body: JSON.stringify(requestData),
-    });
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! Status: ${response.status}`);
-    }
-
-    return await response.json();
+    const response = await apiClient.put(`/entities/lab_test/${testId}`, requestData);
+    return response.data;
   } catch (error) {
     console.error("Error updating test:", error);
     throw error;
   }
 };
 
-// Create Test - POST request
+
+
+
+//POST request
 export const createTest = async (requestData: TestRequestData): Promise<any> => {
-  const url = "https://api.teknologiunggul.com/entities/lab_test";
-
   try {
-    const response = await requestInterceptor(url, {
-      method: "POST",   
-      body: JSON.stringify(requestData),
-    });
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! Status: ${response.status}`);
-    }
-
-    return await response.json();
+    const response = await apiClient.post("/entities/lab_test", requestData);
+    return response.data;
   } catch (error) {
     console.error("Error creating test:", error);
+    throw error;
+  }
+};
+//fetch
+export const fetchTests = async () => {
+  try {
+    const response = await apiClient.post('/entities/filter/lab_test', {});
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching tests:', error);
+    throw error;
+  }
+};
+//delete
+export const deleteTest = async (testId: string) => {
+  try {
+    const response = await apiClient.delete(`/entities/lab_test/${testId}`);
+    return response.status === 200;
+  } catch (error) {
+    console.error('Error deleting lab test:', error);
     throw error;
   }
 };
