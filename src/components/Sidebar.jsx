@@ -19,7 +19,7 @@ import {
   FaFlask,
 } from "react-icons/fa";
 import "./Sidebar.css";
-import TestTable from "./TestTable"; // Import the TestTable component
+
 
 const Sidebar = () => {
   const [openDropdown, setOpenDropdown] = useState(null); // Track which dropdown is open

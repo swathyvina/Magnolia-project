@@ -15,13 +15,14 @@ import {
   CardContent,
   Box,
 } from "@mui/material";
-import { postLabTest } from "../hooks/apipost";
-import createTest from "../hooks/API.tsx"
-import { updateTest } from "../hooks/updatetest";
+
+import {createTest} from "../hooks/API.tsx"
+import { updateTest } from "../hooks/API.tsx";
+
 import { useParams } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import AddIcon from "@mui/icons-material/Add";
-import RemoveIcon from "@mui/icons-material/Remove";
+
 
 
 import IconButton from "@mui/material/IconButton";
@@ -57,9 +58,7 @@ const [selectedValues, setSelectedValues] = useState({
 
   const { testId } = useParams();
   const navigate = useNavigate();
-  const [show, setShow] = useState(false);
-  const [showDropdown, setShowDropdown] = useState(false);
-  const [selectedGender, setSelectedGender] = useState("");
+
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [hasVisited, setHasVisited] = useState(false); 
   const [showConfig, setShowConfig] = useState(true);
@@ -289,7 +288,7 @@ const [selectedValues, setSelectedValues] = useState({
     is_value_applicable: selectedValues.IsvalueRequired === "Yes",
     description: selectedValues.additionalComments,
   
-    test_result_guidelines, // Updated guidelines array
+    test_result_guidelines, 
   };
   
 
@@ -299,7 +298,7 @@ const [selectedValues, setSelectedValues] = useState({
         response = await updateTest(testId, requestData);
         alert("Lab test updated successfully!");
       } else {
-        response = await postLabTest(requestData);
+        response = await createTest(requestData);
         alert("Lab test added successfully!");
       }
 

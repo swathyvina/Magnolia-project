@@ -1,24 +1,30 @@
-import React from "react";
+import React, { useState } from "react";
 import { Outlet } from "react-router-dom";
 import Sidebar from "./Sidebar";
 import CustomNavbar from "./CustomNavbar";
+import "./Layout.css";
 
 const Layout = () => {
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+
+  const toggleSidebar = () => {
+    setSidebarOpen(!sidebarOpen);
+  };
+
   return (
-    <>
-      <CustomNavbar />
-      <div style={{ display: "flex", height: "100vh" }}>
-       
-        <div style={{ width: "17%", background: "#f4f4f4", padding: "10px" }}>
+    <div className="layout-container">
+      <CustomNavbar onMenuClick={toggleSidebar} />
+
+      <div className="layout-content">
+        <div className={`sidebar-container ${sidebarOpen ? '' : 'sidebar-collapsed'}`}>
           <Sidebar />
         </div>
-
-   
-        <div style={{ width: "80%", padding: "" }}>
-          <Outlet />  
+        
+        <div className="main-content">
+          <Outlet />
         </div>
       </div>
-    </>
+    </div>
   );
 };
 
